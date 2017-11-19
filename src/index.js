@@ -1,4 +1,7 @@
-function createIs (names, target) {
+import { warn, typeError } from './log';
+
+
+const createIs = (names, target) => {
   const { is, not } = names.reduce(({is, not}, name) => {
     is = { ...is, [name]: name === target};
     not = { ...not, [name]: !is[name] };
@@ -8,41 +11,67 @@ function createIs (names, target) {
   is.not = not;
 
   return is;
-}
+};
 
-function isLowercase (str) {
+const isLowercase = (str) => {
   return /^[a-z_]+$/.test(str);
-}
+};
 
-function validate (status) {
-  const names = Object.keys(status);
+const validate = table => {
+  const names = Object.keys(table);
+
+  // NOTE: should i warn?
+  // if (!names.length) {
+  //   warn('no status is defined, are you sure?');
+  // }
 
   if (names.some(isLowercase)) {
-    console.warn('[status] Use uppercase for status names');
+    warn('Use uppercase for status names');
   }
+
+  names.forEach(name => {
+    if (!('id' in table[name])) {
+      typeError(`${name} state have not prop id`);
+    }
+  });
 }
 
-export default function (status) {
-  validate(status);
+const createState = (options, name, names) => ({
+  ...options,
+  is: createIs(names, name),
+});
 
-  const names = Object.keys(status);
-  // Id 索引
-  const store = {};
+export default table => {
+  validate(table);
+
+  const names = Object.keys(table);
+  const idMap = {};
+  const nameMap = {};
   const enums = [];
+  let defaultValue = undefined;
 
-  const obj = names.reduce((obj, name) => {
-    const state = {
-      ...status[name],
-      is: createIs(names, name),
-    };
+  names.forEach(name => {
+    const state = createState(table[name], name, names);
 
-    store[state.id] = state;
-    obj[name] = state;
-    return obj;
-  }, {});
+    idMap[state.id] = state;
+    nameMap[name] = state;
+    enums.push(state);
+  });
 
-  obj.getById = id => store[id];
-  obj.enums = enums;
+  const status = {
+    ...nameMap,
+    getById: id => idMap[id] || defaultValue,
+    enums: enums,
+    default: value => {
+      if (!(value in nameMap)) {
+        typeError(`default value name(${value}) is undefined`);
+      }
 
-  return obj;
-}
+      defaultValue = nameMap[value];
+
+      return status;
+    },
+  };
+
+  return status;
+};
