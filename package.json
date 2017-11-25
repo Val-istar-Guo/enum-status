@@ -1,7 +1,7 @@
 {
   "name": "enum-status",
-  "version": "0.0.1-alpha.1",
-  "main": "src",
+  "version": "0.0.1-alpha.2",
+  "main": "dist/bundle.js",
   "directories": {
     "test": "test"
   },
