@@ -120,5 +120,17 @@ describe('paymentStatus', function () {
         expect(haveDefaultStatus.getById(2)).to.be.equal(haveDefaultStatus.ISSUE);
       });
     })
+  });
+
+  context('.extend(runtime_propetry)', function () {
+    it('should return new object that have runtime property', function () {
+      const extension = {
+        reason: 'Idea has changed',
+      };
+      const refundState = paymentStatus.REFUNDED.extend(extension);
+
+      expect(refundState).not.equal(paymentStatus.REFUNDED);
+      expect(refundState.reason).to.equal(extension.reason);
+    })
   })
 });
