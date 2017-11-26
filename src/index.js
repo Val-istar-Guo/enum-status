@@ -1,4 +1,5 @@
 import { warn, typeError } from './log';
+import extend from './extend';
 
 
 const createIs = (names, target) => {
@@ -52,6 +53,7 @@ export default table => {
 
   names.forEach(name => {
     const state = createState(table[name], name, names);
+    state.extend = extend(state);
 
     idMap[state.id] = state;
     nameMap[name] = state;
